@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --reader-bg: #f8fafc;
+  --reader-text: #0f172a;
+}
+
+.dark {
+  --reader-bg: #212121;
+  --reader-text: #e0e0e0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--reader-bg);
+  color: var(--reader-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+.pdf-container canvas {
+  margin: 0 auto;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.dark .react-pdf__Page {
+  filter: invert(0.87) hue-rotate(180deg);
+}
+
+
+
+
+/* Custom highlight style - Light Mode */
+::selection {
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+::-moz-selection {
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* Custom highlight style - Dark Mode */
+.dark ::selection {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+.dark ::-moz-selection {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* Header transition logic */
+.header-container {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.is-fullscreen .header-container {
+  transform: translateY(-100%);
+}
+
+.is-fullscreen .header-trigger:hover + .header-container,
+.is-fullscreen .header-container:hover {
+  transform: translateY(0);
+}
+
+/* Scrollbar hiding */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* EPUB styles */
+.epub-container {
+  height: 100%;
+  width: 100%;
+}
