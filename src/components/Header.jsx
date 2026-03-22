@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Maximize2, Minimize2, FolderOpen } from 'lucide-react';
+import { Moon, Sun, Maximize2, Minimize2, FolderOpen, Hash } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,7 +12,9 @@ export function Header({
   isDarkMode, 
   toggleDarkMode, 
   isFullscreen, 
-  toggleFullscreen 
+  toggleFullscreen,
+  hasFile,
+  onNavigateClick
 }) {
   return (
     <>
@@ -40,6 +42,16 @@ export function Header({
               }}
             />
           </label>
+
+          {hasFile && (
+            <button
+              onClick={onNavigateClick}
+              className="p-1.5 hover:bg-foreground/5 rounded-full text-foreground transition-colors"
+              title="Go to Page (N)"
+            >
+              <Hash size={18} />
+            </button>
+          )}
 
           <button
             onClick={toggleDarkMode}

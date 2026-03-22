@@ -6,7 +6,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 // Set up worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-export function PDFReader({ file, isFullscreen }) {
+export function PDFReader({ file, isFullscreen, navCommand }) {
   const [numPages, setNumPages] = useState(null);
   const [visiblePages, setVisiblePages] = useState(3);
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,6 +57,36 @@ export function PDFReader({ file, isFullscreen }) {
       }, 150);
     }
   }, [isFullscreen]);
+
+  useEffect(() => {
+    if (navCommand && numPages && containerRef.current) {
+      const targetPage = Math.min(Math.max(navCommand.page, 1), numPages);
+      
+      if (targetPage > visiblePages) {
+        setVisiblePages(targetPage + 2);
+        
+        const checkExist = setInterval(() => {
+          if (!containerRef.current) {
+            clearInterval(checkExist);
+            return;
+          }
+          const pageElements = containerRef.current.querySelectorAll('.react-pdf__Page');
+          if (pageElements.length >= targetPage) {
+            clearInterval(checkExist);
+            const el = pageElements[targetPage - 1];
+            containerRef.current.scrollTo({ top: el.offsetTop - 40, behavior: 'instant' });
+          }
+        }, 50);
+        setTimeout(() => clearInterval(checkExist), 2000);
+      } else {
+        const pageElements = containerRef.current.querySelectorAll('.react-pdf__Page');
+        if (pageElements.length >= targetPage) {
+          const el = pageElements[targetPage - 1];
+          containerRef.current.scrollTo({ top: el.offsetTop - 40, behavior: 'smooth' });
+        }
+      }
+    }
+  }, [navCommand]);
 
   const handleMouseUp = () => {
     setTimeout(() => {

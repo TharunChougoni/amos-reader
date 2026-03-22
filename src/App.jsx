@@ -9,6 +9,9 @@ function App() {
     return localStorage.getItem('darkMode') === 'true';
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showNavModal, setShowNavModal] = useState(false);
+  const [navInput, setNavInput] = useState("");
+  const [navCommand, setNavCommand] = useState(null);
 
   useEffect(() => {
     if (file) {
@@ -33,9 +36,14 @@ function App() {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
         toggleFullscreen();
       } else if (e.key.toLowerCase() === 'd') {
+        e.preventDefault();
         setIsDarkMode(prev => !prev);
+      } else if (e.key.toLowerCase() === 'n' && file) {
+        e.preventDefault();
+        setShowNavModal(true);
       }
     };
 
@@ -75,10 +83,55 @@ function App() {
         toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         isFullscreen={isFullscreen}
         toggleFullscreen={toggleFullscreen}
+        hasFile={!!file}
+        onNavigateClick={() => setShowNavModal(true)}
       />
       <main className="h-full w-full">
-        <Reader file={file} isDarkMode={isDarkMode} isFullscreen={isFullscreen} />
+        <Reader file={file} isDarkMode={isDarkMode} isFullscreen={isFullscreen} navCommand={navCommand} />
       </main>
+
+      {showNavModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const val = parseInt(navInput);
+              if (!isNaN(val) && val > 0) {
+                setNavCommand({ page: val, timestamp: Date.now() });
+              }
+              setShowNavModal(false);
+              setNavInput("");
+            }}
+            className="bg-background border border-foreground/10 shadow-2xl rounded-2xl p-6 flex flex-col gap-4 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200"
+          >
+            <h2 className="text-lg font-bold text-foreground">Go to Page</h2>
+            <input 
+              autoFocus
+              type="number" 
+              min="1"
+              value={navInput}
+              onChange={e => setNavInput(e.target.value)}
+              className="w-full px-4 py-2 bg-foreground/5 border border-foreground/10 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder="Enter page number..."
+            />
+            <div className="flex justify-end gap-2 mt-2">
+              <button 
+                type="button" 
+                onClick={() => setShowNavModal(false)}
+                className="px-4 py-2 hover:bg-foreground/5 rounded-lg text-foreground transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-bold shadow-sm"
+              >
+                Go
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

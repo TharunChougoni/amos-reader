@@ -3,7 +3,7 @@ import { PDFReader } from './PDFReader';
 import { EPUBReader } from './EPUBReader';
 import { BookOpen } from 'lucide-react';
 
-export function Reader({ file, isDarkMode, isFullscreen }) {
+export function Reader({ file, isDarkMode, isFullscreen, navCommand }) {
   if (!file) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-foreground/40 gap-4">
@@ -21,11 +21,11 @@ export function Reader({ file, isDarkMode, isFullscreen }) {
   const extension = file.name.split('.').pop()?.toLowerCase();
 
   if (extension === 'pdf') {
-    return <PDFReader file={file} isFullscreen={isFullscreen} />;
+    return <PDFReader file={file} isFullscreen={isFullscreen} navCommand={navCommand} />;
   }
 
   if (extension === 'epub') {
-    return <EPUBReader file={file} isDarkMode={isDarkMode} isFullscreen={isFullscreen} />;
+    return <EPUBReader file={file} isDarkMode={isDarkMode} isFullscreen={isFullscreen} navCommand={navCommand} />;
   }
 
   return (

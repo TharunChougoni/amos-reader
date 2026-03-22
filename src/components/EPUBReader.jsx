@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ePub from 'epubjs';
 
-export function EPUBReader({ file, isDarkMode, isFullscreen }) {
+export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
   const viewerRef = useRef(null);
   const bookRef = useRef(null);
   const renditionRef = useRef(null);
@@ -88,6 +88,19 @@ export function EPUBReader({ file, isDarkMode, isFullscreen }) {
       }
     };
   }, [file]);
+
+  useEffect(() => {
+    if (navCommand && bookRef.current && renditionRef.current) {
+      const book = bookRef.current;
+      if (book.locations && book.locations.length > 0) {
+        const targetPage = Math.min(Math.max(navCommand.page, 1), book.locations.total);
+        const cfi = book.locations.cfiFromLocation(targetPage);
+        if (cfi) {
+          renditionRef.current.display(cfi);
+        }
+      }
+    }
+  }, [navCommand]);
 
   useEffect(() => {
     if (renditionRef.current && currentCfiRef.current) {
