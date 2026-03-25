@@ -6,7 +6,10 @@ export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
   const bookRef = useRef(null);
   const renditionRef = useRef(null);
   const currentCfiRef = useRef(null);
-  const [progress, setProgress] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isEditingPage, setIsEditingPage] = useState(false);
+  const [navInput, setNavInput] = useState("");
 
   useEffect(() => {
     if (!file || !viewerRef.current) return;
@@ -40,8 +43,9 @@ export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
               const rect = range.getBoundingClientRect();
               if (rect.width === 0 && rect.height === 0) return;
               
-              // Position the bottom of the selection near the top of the viewport
-              const offset = rect.bottom - 40; // 40px margin from the top
+              const viewportHeight = contents.window.innerHeight;
+              const targetTop = viewportHeight * 0.20; // 20% of screen height
+              const offset = rect.bottom - targetTop;
               
               if (Math.abs(offset) > 20) {
                 contents.window.scrollBy({ top: offset, behavior: 'smooth' });
@@ -62,18 +66,16 @@ export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
         const currentLocation = rendition.currentLocation();
         if (currentLocation) {
           currentCfiRef.current = currentLocation.start.cfi;
-          const currentPage = book.locations.locationFromCfi(currentLocation.start.cfi);
-          const totalPages = book.locations.total;
-          setProgress(`${currentPage} / ${totalPages}`);
+          setCurrentPage(book.locations.locationFromCfi(currentLocation.start.cfi));
+          setTotalPages(book.locations.total);
         }
       }).catch(console.error);
 
       rendition.on('relocated', (location) => {
         currentCfiRef.current = location.start.cfi;
         if (book.locations.length > 0) {
-          const currentPage = book.locations.locationFromCfi(location.start.cfi);
-          const totalPages = book.locations.total;
-          setProgress(`${currentPage} / ${totalPages}`);
+          setCurrentPage(book.locations.locationFromCfi(location.start.cfi));
+          setTotalPages(book.locations.total);
         }
       });
 
@@ -89,16 +91,18 @@ export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
     };
   }, [file]);
 
+  const handleLocalNav = (val) => {
+    if (bookRef.current && renditionRef.current && val >= 1 && val <= totalPages) {
+       const cfi = bookRef.current.locations.cfiFromLocation(val);
+       if (cfi) {
+         renditionRef.current.display(cfi);
+       }
+    }
+  };
+
   useEffect(() => {
     if (navCommand && bookRef.current && renditionRef.current) {
-      const book = bookRef.current;
-      if (book.locations && book.locations.length > 0) {
-        const targetPage = Math.min(Math.max(navCommand.page, 1), book.locations.total);
-        const cfi = book.locations.cfiFromLocation(targetPage);
-        if (cfi) {
-          renditionRef.current.display(cfi);
-        }
-      }
+      handleLocalNav(navCommand.page);
     }
   }, [navCommand]);
 
@@ -144,9 +148,37 @@ export function EPUBReader({ file, isDarkMode, isFullscreen, navCommand }) {
         ref={viewerRef} 
         className={`epub-viewer min-h-screen w-full mx-auto transition-all pt-20 ${isFullscreen ? 'max-w-full px-4' : 'max-w-3xl'}`}
       />
-      {progress && (
-        <div className="fixed bottom-6 right-8 text-foreground/40 font-bold text-xs md:text-sm z-50 pointer-events-none tabular-nums select-none transition-opacity">
-          {progress}
+      {totalPages > 0 && (
+        <div 
+          onDoubleClick={() => {
+            setNavInput(String(currentPage > 0 ? currentPage : 1));
+            setIsEditingPage(true);
+          }}
+          className="fixed bottom-6 right-8 text-foreground/40 font-bold text-xs md:text-sm z-50 tabular-nums select-none group"
+        >
+          {isEditingPage ? (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleLocalNav(parseInt(navInput));
+              setIsEditingPage(false);
+            }}>
+              <input
+                autoFocus
+                type="number"
+                min="1"
+                max={totalPages}
+                value={navInput}
+                onChange={e => setNavInput(e.target.value)}
+                onBlur={() => setIsEditingPage(false)}
+                className="w-14 bg-background border border-foreground/20 rounded px-1 py-0.5 text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500 text-center"
+              />
+              <span className="ml-1">/ {totalPages}</span>
+            </form>
+          ) : (
+            <div className="cursor-text hover:text-foreground/60 transition-colors" title="Double-click to manually enter page number">
+              {currentPage > 0 ? currentPage : '-'} / {totalPages}
+            </div>
+          )}
         </div>
       )}
     </div>
