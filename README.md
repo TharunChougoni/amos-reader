@@ -2,6 +2,11 @@
 
 A clean browser-based reading app for PDFs and EPUBs. Amos Reader focuses on distraction-free reading, quick file loading, and a dark, minimal interface that works well for long reading sessions.
 
+## Live Demo
+
+- Deployment: https://amos-reader.vercel.app
+- Repository: https://github.com/TharunChougoni/amos-reader
+
 ## Features
 
 - Open local PDF files in the browser
